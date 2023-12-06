@@ -1,6 +1,6 @@
 `include "constants.v"
 
-module DigitalClock(
+module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
     input clk, global_reset, reset,
 
     input [1:0] mode,
@@ -10,7 +10,7 @@ module DigitalClock(
 
     input alarm_enable,
 
-    output reg [6:0] ms_out,
+    output reg [9:0] ms_out,
     output reg [5:0] sec_out,
     output reg [5:0] min_out,
     output reg [4:0] hour_out,
@@ -18,6 +18,7 @@ module DigitalClock(
     output alarm_out
 );
     // clock
+    wire clock_clk;
     wire clock_reset;
 
     wire [1:0] clock_select;
@@ -28,10 +29,11 @@ module DigitalClock(
     wire [4:0] clock_hour_out;
 
     // stop watch
+    wire stopwatch_clk;
     wire stopwatch_reset;
     wire stopwatch_enable;
 
-    wire [6:0] stopwatch_ms_out;
+    wire [9:0] stopwatch_ms_out;
     wire [5:0] stopwatch_sec_out;
     wire [5:0] stopwatch_min_out;
 
@@ -89,8 +91,8 @@ module DigitalClock(
         endcase
     end
 
-    Clock Clock(
-        .clk(clk), 
+    Clock #(CLK_FREQ_HZ) Clock(
+        .clk(clk),
         .reset(clock_reset),
         .select(clock_select),
         .increment(clock_increment),
@@ -99,7 +101,7 @@ module DigitalClock(
         .hour_out(clock_hour_out)
     );
     
-    Stopwatch Stopwatch(
+    Stopwatch #(CLK_FREQ_HZ) Stopwatch(
         .clk(clk),
         .reset(stopwatch_reset),
         .enable(stopwatch_enable),
