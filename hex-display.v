@@ -2,49 +2,49 @@
 
 module HexDisplay#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
     input clk, reset,
-    input [31:0] data,
-    output reg [3:0] seg_out,
-    output reg [2:0] an_out
+    input [31:0] all_data,
+    output reg [3:0] data,
+    output reg [2:0] an
 );
     wire clk1KHz;
 
     always @(posedge clk1KHz or posedge reset) begin
         if(reset) begin
-            an_out <= 0;
+            an <= 0;
         end
         else begin
-            an_out <= an_out + 1;
+            an <= an + 1;
         end
     end
 
     always @* begin
-        case (an_out)
+        case (an)
             3'b000: begin
-                seg_out <= data[3:0];
+                data <= all_data[3:0];
             end
             3'b001: begin
-                seg_out <= data[7:4];
+                data <= all_data[7:4];
             end
             3'b010: begin
-                seg_out <= data[11:8];
+                data <= all_data[11:8];
             end
             3'b011: begin
-                seg_out <= data[15:12];
+                data <= all_data[15:12];
             end
             3'b100: begin
-                seg_out <= data[19:16];
+                data <= all_data[19:16];
             end
             3'b101: begin
-                seg_out <= data[23:20];
+                data <= all_data[23:20];
             end
             3'b110: begin
-                seg_out <= data[27:24];
+                data <= all_data[27:24];
             end
             3'b111: begin
-                seg_out <= data[31:28];
+                data <= all_data[31:28];
             end
             default: begin
-                seg_out <= 0;
+                data <= 0;
             end
         endcase
     end

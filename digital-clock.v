@@ -2,8 +2,8 @@
 
 module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
     input clk, global_reset, reset,
-
-    input [1:0] mode,
+    
+    input [1:0] mode, 
 
     input [1:0] select,
     input increment,
@@ -17,10 +17,9 @@ module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
 
     output alarm_out
 );
-    // clock
-    wire clock_clk;
-    wire clock_reset;
+    wire increment_posedge;
 
+    // clock
     wire [1:0] clock_select;
     wire clock_increment;
 
@@ -29,16 +28,16 @@ module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
     wire [4:0] clock_hour_out;
 
     // stop watch
-    wire stopwatch_clk;
     wire stopwatch_reset;
-    wire stopwatch_enable;
+    reg stopwatch_enable;
+    wire stopwatch_start;
+    wire stopwatch_stop;
 
     wire [9:0] stopwatch_ms_out;
     wire [5:0] stopwatch_sec_out;
     wire [5:0] stopwatch_min_out;
 
     // alarm
-    wire alarm_reset;
     wire [5:0] alarm_sec_in;
     wire [5:0] alarm_min_in;
     wire [4:0] alarm_hour_in;
@@ -51,38 +50,44 @@ module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
     wire [4:0] alarm_hour_out;
 
     // assign
-    assign clock_reset = global_reset;
     assign clock_increment = increment;
     assign clock_select = mode == `MODE_CLOCK_EDIT & ~global_reset ? select : `SELECT_NONE;
 
-    assign stopwatch_reset = mode == `MODE_STOPWATCH & ~global_reset ? reset : global_reset;
-    assign stopwatch_enable = mode == `MODE_STOPWATCH & ~global_reset ? increment : 0;
-
-    assign alarm_reset = global_reset;
     assign alarm_increment = increment;
     assign alarm_select = mode == `MODE_ALARM_EDIT & ~global_reset ? select : `SELECT_NONE;
+
     assign alarm_sec_in = clock_sec_out;
     assign alarm_min_in = clock_min_out;
     assign alarm_hour_in = clock_hour_out;
     
+    assign stopwatch_reset = mode == `MODE_STOPWATCH & ~global_reset ? reset : global_reset;
+    assign stopwatch_start = stopwatch_enable;
+    assign stopwatch_stop = ~stopwatch_enable;
+    
+    always @(posedge clk or posedge global_reset) begin
+        if (global_reset) begin
+            stopwatch_enable <= 0;
+        end
+        else if(mode == `MODE_STOPWATCH & increment_posedge) begin
+            stopwatch_enable <= ~stopwatch_enable;
+        end
+    end
+    
     always @* begin
         case (mode)
             `MODE_CLOCK, `MODE_CLOCK_EDIT: begin
-                // output
                 ms_out <= 0;
                 sec_out <= clock_sec_out;
                 min_out <= clock_min_out;
                 hour_out <= clock_hour_out;
             end
             `MODE_STOPWATCH: begin
-                // output
                 ms_out <= stopwatch_ms_out;
                 sec_out <= stopwatch_sec_out;
                 min_out <= stopwatch_min_out;
                 hour_out <= 0;
             end
             `MODE_ALARM_EDIT: begin
-                // output
                 ms_out <= 0;
                 sec_out <= alarm_sec_out;
                 min_out <= alarm_min_out;
@@ -93,7 +98,7 @@ module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
 
     Clock #(CLK_FREQ_HZ) Clock(
         .clk(clk),
-        .reset(clock_reset),
+        .reset(global_reset),
         .select(clock_select),
         .increment(clock_increment),
         .sec_out(clock_sec_out),
@@ -104,14 +109,16 @@ module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
     Stopwatch #(CLK_FREQ_HZ) Stopwatch(
         .clk(clk),
         .reset(stopwatch_reset),
-        .enable(stopwatch_enable),
+        .start(stopwatch_start),
+        .stop(stopwatch_stop),
         .ms_out(stopwatch_ms_out),
         .sec_out(stopwatch_sec_out),
         .min_out(stopwatch_min_out)
     );
 
     Alarm Alarm(
-        .reset(alarm_reset),
+        .clk(clk),
+        .reset(global_reset),
         .enable(alarm_enable),
         .sec_in(alarm_sec_in),
         .min_in(alarm_min_in),
@@ -122,5 +129,11 @@ module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
         .min_out(alarm_min_out),
         .hour_out(alarm_hour_out),
         .out(alarm_out)
+    );
+
+    PositiveEdgeDetector PositiveEdgeDetector_increment(
+        .clk(clk),
+        .signal(increment),
+        .out(increment_posedge)
     );
 endmodule

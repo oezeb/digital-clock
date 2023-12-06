@@ -11,8 +11,8 @@ module Clock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ > 1Hz
     output reg [4:0] hour_out
 );
     wire clk1Hz;
-    reg prev_clk1Hz;
-    reg prev_increment;
+    wire clk1Hz_posedge;
+    wire increment_posedge;
 
     always @(posedge clk or posedge reset) begin
         if(reset) begin
@@ -21,7 +21,7 @@ module Clock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ > 1Hz
             hour_out <= 0;
         end
         else begin
-            if (clk1Hz & ~prev_clk1Hz) begin
+            if (clk1Hz_posedge) begin
                 if(sec_out + 1 > 59) begin
                     sec_out <= 0;
                     if(min_out + 1 > 59) begin
@@ -37,7 +37,7 @@ module Clock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ > 1Hz
                 end
             end
 
-            if (increment & ~prev_increment) begin
+            if (increment_posedge) begin
                 case(select)
                     `SELECT_SEC: sec_out <= 0;
                     `SELECT_MIN: min_out <= min_out + 1 > 59 ? 0 : min_out + 1;
@@ -45,13 +45,22 @@ module Clock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ > 1Hz
                 endcase
             end
         end
-        
-        prev_clk1Hz <= clk1Hz;
-        prev_increment <= increment;
     end
 
     ClockConverter #(CLK_FREQ_HZ, 1) ClockConverter(
         .clk(clk),
         .clk_out(clk1Hz)
+    );
+
+    PositiveEdgeDetector PositiveEdgeDetector_clk1Hz(
+        .clk(clk),
+        .signal(clk1Hz),
+        .out(clk1Hz_posedge)
+    );
+
+    PositiveEdgeDetector PositiveEdgeDetector_increment(
+        .clk(clk),
+        .signal(increment),
+        .out(increment_posedge)
     );
 endmodule

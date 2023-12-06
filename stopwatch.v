@@ -1,11 +1,13 @@
 module Stopwatch#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
-    input clk, reset, enable,
+    input clk, reset, start, stop,
     
     output reg [9:0] ms_out,
     output reg [5:0] sec_out,
     output reg [5:0] min_out
 );
     wire clk1KHz;
+    reg enable;
+    wire start_posedge, stop_posedge;
 
     always @(posedge clk1KHz or posedge reset) begin
         if(reset) begin
@@ -35,8 +37,32 @@ module Stopwatch#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
         end
     end
 
+    always @(posedge clk or posedge reset) begin
+        if(reset) begin
+            enable <= 0;
+        end
+        else if(start_posedge) begin
+            enable <= 1;
+        end
+        else if(stop_posedge) begin
+            enable <= 0;
+        end
+    end
+
     ClockConverter #(CLK_FREQ_HZ,  `KILO) ClockConverter(
         .clk(clk),
         .clk_out(clk1KHz)
+    );
+    
+    PositiveEdgeDetector PositiveEdgeDetector_start(
+        .clk(clk),
+        .signal(start),
+        .out(start_posedge)
+    );    
+
+    PositiveEdgeDetector PositiveEdgeDetector_stop(
+        .clk(clk),
+        .signal(stop),
+        .out(stop_posedge)
     );
 endmodule
