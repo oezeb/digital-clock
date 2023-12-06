@@ -1,22 +1,24 @@
-module Stopwatch(
+module Stopwatch#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
     input clk, reset, enable,
     
-    output reg [6:0] ms_out,
+    output reg [9:0] ms_out,
     output reg [5:0] sec_out,
     output reg [5:0] min_out
 );
-    always @(posedge clk or posedge reset) begin
+    wire clk1KHz;
+
+    always @(posedge clk1KHz or posedge reset) begin
         if(reset) begin
             ms_out <= 0;
             sec_out <= 0;
             min_out <= 0;
         end
         else if(enable) begin
-            if(ms_out + 1 >= 100) begin
+            if(ms_out + 1 > 999) begin
                 ms_out <= 0;
-                if(sec_out + 1 >= 60) begin
+                if(sec_out + 1 > 59) begin
                     sec_out <= 0;
-                    if(min_out + 1 >= 60) begin
+                    if(min_out + 1 > 59) begin
                         min_out <= 0;
                     end
                     else begin
@@ -32,4 +34,9 @@ module Stopwatch(
             end
         end
     end
+
+    ClockConverter #(CLK_FREQ_HZ,  `KILO) ClockConverter(
+        .clk(clk),
+        .clk_out(clk1KHz)
+    );
 endmodule
