@@ -1,4 +1,4 @@
-module ClockConverter#(parameter FROM_HZ = 100000000, TO_HZ = 1)(
+module ClockConverter#(parameter FROM_HZ = 10, TO_HZ = 1)( // FROM_HZ > TO_HZ
     input clk,
     output reg clk_out
 );
