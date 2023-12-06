@@ -1,7 +1,7 @@
 `include "constants.v"
 
-module Clock(
-    input clk100MHz, reset,
+module Clock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ > 1Hz
+    input clk, reset,
 
     input [1:0] select,
     input increment,
@@ -14,7 +14,7 @@ module Clock(
     reg prev_clk1Hz;
     reg prev_increment;
 
-    always @(posedge clk100MHz or posedge reset) begin
+    always @(posedge clk or posedge reset) begin
         if(reset) begin
             sec_out <= 0;
             min_out <= 0;
@@ -22,11 +22,11 @@ module Clock(
         end
         else begin
             if (clk1Hz & ~prev_clk1Hz) begin
-                if(sec_out + 1 >= 60) begin
+                if(sec_out + 1 > 59) begin
                     sec_out <= 0;
-                    if(min_out + 1 >= 60) begin
+                    if(min_out + 1 > 59) begin
                         min_out <= 0;
-                        hour_out <= hour_out + 1 >= 24 ? 0 : hour_out + 1;
+                        hour_out <= hour_out + 1 > 23 ? 0 : hour_out + 1;
                     end
                     else begin
                         min_out <= min_out + 1;
@@ -40,8 +40,8 @@ module Clock(
             if (increment & ~prev_increment) begin
                 case(select)
                     `SELECT_SEC: sec_out <= 0;
-                    `SELECT_MIN: min_out <= min_out + 1 >= 60 ? 0 : min_out + 1;
-                    `SELECT_HOUR: hour_out <= hour_out + 1 >= 24 ? 0 : hour_out + 1;
+                    `SELECT_MIN: min_out <= min_out + 1 > 59 ? 0 : min_out + 1;
+                    `SELECT_HOUR: hour_out <= hour_out + 1 > 23 ? 0 : hour_out + 1;
                 endcase
             end
         end
@@ -50,8 +50,8 @@ module Clock(
         prev_increment <= increment;
     end
 
-    ClockConverter #(.FROM_HZ(100000000), .TO_HZ(1)) ClockConverter(
-        .clk(clk100MHz),
+    ClockConverter #(CLK_FREQ_HZ, 1) ClockConverter(
+        .clk(clk),
         .clk_out(clk1Hz)
     );
 endmodule
