@@ -1,5 +1,7 @@
-module HexDisplay(
-    input clk100MHz, reset,
+`include "constants.v"
+
+module HexDisplay#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
+    input clk, reset,
     input [31:0] data,
     output reg [3:0] seg_out,
     output reg [2:0] an_out
@@ -47,8 +49,8 @@ module HexDisplay(
         endcase
     end
 
-    ClockConverter #(.FROM_HZ(100000000), .TO_HZ(1000)) ClockConverter(
-        .clk(clk100MHz),
+    ClockConverter #(CLK_FREQ_HZ, 1000) ClockConverter(
+        .clk(clk),
         .clk_out(clk1KHz)
     );
 endmodule
