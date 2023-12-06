@@ -45,7 +45,7 @@ module Alarm (
         end   
     end
 
-    PositiveEdgeDetector PositiveEdgeDetector_increment(
+    PosedgeDetector PosedgeDetector_increment(
         .clk(clk),
         .signal(increment),
         .out(increment_posedge)

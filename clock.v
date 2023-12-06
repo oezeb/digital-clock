@@ -52,13 +52,13 @@ module Clock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ > 1Hz
         .clk_out(clk1Hz)
     );
 
-    PositiveEdgeDetector PositiveEdgeDetector_clk1Hz(
+    PosedgeDetector PosedgeDetector_clk1Hz(
         .clk(clk),
         .signal(clk1Hz),
         .out(clk1Hz_posedge)
     );
 
-    PositiveEdgeDetector PositiveEdgeDetector_increment(
+    PosedgeDetector PosedgeDetector_increment(
         .clk(clk),
         .signal(increment),
         .out(increment_posedge)

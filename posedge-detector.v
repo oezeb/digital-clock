@@ -1,4 +1,4 @@
-module PositiveEdgeDetector(
+module PosedgeDetector(
     input clk,
     input signal,
     output reg out

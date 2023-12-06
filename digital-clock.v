@@ -131,7 +131,7 @@ module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
         .out(alarm_out)
     );
 
-    PositiveEdgeDetector PositiveEdgeDetector_increment(
+    PosedgeDetector PosedgeDetector_increment(
         .clk(clk),
         .signal(increment),
         .out(increment_posedge)

@@ -54,13 +54,13 @@ module Stopwatch#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
         .clk_out(clk1KHz)
     );
     
-    PositiveEdgeDetector PositiveEdgeDetector_start(
+    PosedgeDetector PosedgeDetector_start(
         .clk(clk),
         .signal(start),
         .out(start_posedge)
     );    
 
-    PositiveEdgeDetector PositiveEdgeDetector_stop(
+    PosedgeDetector PosedgeDetector_stop(
         .clk(clk),
         .signal(stop),
         .out(stop_posedge)

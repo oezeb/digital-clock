@@ -1,4 +1,4 @@
-module TestPositiveEdgeDetector();
+module TestPosedgeDetector();
     reg clk, signal;
     wire out;
 
@@ -12,7 +12,7 @@ module TestPositiveEdgeDetector();
 
     always #1 clk <= ~clk;
 
-    PositiveEdgeDetector PositiveEdgeDetector(
+    PosedgeDetector PosedgeDetector(
         .clk(clk),
         .signal(signal),
         .out(out)
