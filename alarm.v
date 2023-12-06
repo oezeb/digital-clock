@@ -27,9 +27,9 @@ module Alarm (
         end
         else if(increment) begin
             case(select)
-                `SELECT_SEC: sec_out <= sec_out + 1 >= 60 ? 0 : sec_out + 1;
-                `SELECT_MIN: min_out <= min_out + 1 >= 60 ? 0 : min_out + 1;
-                `SELECT_HOUR: hour_out <= hour_out + 1 >= 24 ? 0 : hour_out + 1;
+                `SELECT_SEC: sec_out <= sec_out + 1 > 59 ? 0 : sec_out + 1;
+                `SELECT_MIN: min_out <= min_out + 1 > 59 ? 0 : min_out + 1;
+                `SELECT_HOUR: hour_out <= hour_out + 1 > 23 ? 0 : hour_out + 1;
             endcase
         end     
     end
