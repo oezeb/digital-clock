@@ -4,10 +4,10 @@ module TestPosedgeDetector();
 
     initial begin
         clk <= 0; signal <= 0;
-        #5 signal <= 1;
-        #5 signal <= 0;
-        #5 signal <= 1;
-        #5 $finish;
+        #200 signal <= 1;
+        #200 signal <= 0;
+        #201 signal <= 1;
+        #201 $finish;
     end
 
     always #1 clk <= ~clk;
