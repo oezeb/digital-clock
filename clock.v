@@ -1,6 +1,6 @@
 `include "constants.v"
 
-module Clock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ > 1Hz
+module Clock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1Hz
     input clk, reset,
 
     input [1:0] select,
@@ -10,34 +10,35 @@ module Clock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ > 1Hz
     output reg [5:0] min_out,
     output reg [4:0] hour_out
 );
-    wire clk1Hz;
-    wire clk1Hz_posedge;
-    wire increment_posedge;
+    reg [31:0] counter;
+    reg prev_increment;
 
     always @(posedge clk or posedge reset) begin
         if(reset) begin
             sec_out <= 0;
             min_out <= 0;
             hour_out <= 0;
+            counter <= 0;
         end
         else begin
-            if (clk1Hz_posedge) begin
+            if(counter + 1 > CLK_FREQ_HZ) begin
+                counter <= 0;
                 if(sec_out + 1 > 59) begin
                     sec_out <= 0;
                     if(min_out + 1 > 59) begin
                         min_out <= 0;
-                        hour_out <= hour_out + 1 > 23 ? 0 : hour_out + 1;
+                        if(hour_out + 1 > 23) begin
+                            hour_out <= 0;
+                        end
+                        else hour_out <= hour_out + 1;
                     end
-                    else begin
-                        min_out <= min_out + 1;
-                    end
+                    else min_out <= min_out + 1;
                 end
-                else begin
-                    sec_out <= sec_out + 1;
-                end
+                else sec_out <= sec_out + 1;
             end
+            else counter <= counter + 1;
 
-            if (increment_posedge) begin
+            if(increment & ~prev_increment) begin
                 case(select)
                     `SELECT_SEC: sec_out <= 0;
                     `SELECT_MIN: min_out <= min_out + 1 > 59 ? 0 : min_out + 1;
@@ -45,22 +46,7 @@ module Clock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ > 1Hz
                 endcase
             end
         end
+        
+        prev_increment <= increment;
     end
-
-    ClockConverter #(CLK_FREQ_HZ, 1) ClockConverter(
-        .clk(clk),
-        .clk_out(clk1Hz)
-    );
-
-    PosedgeDetector PosedgeDetector_clk1Hz(
-        .clk(clk),
-        .signal(clk1Hz),
-        .out(clk1Hz_posedge)
-    );
-
-    PosedgeDetector PosedgeDetector_increment(
-        .clk(clk),
-        .signal(increment),
-        .out(increment_posedge)
-    );
 endmodule

@@ -3,9 +3,8 @@
 
 // digital clock
     `define MODE_CLOCK 0
-    `define MODE_STOPWATCH 1
-    `define MODE_ALARM_EDIT 2
-    `define MODE_CLOCK_EDIT 3
+    `define MODE_TIMER 1
+    `define MODE_ALARM 2
 
 // edit time
     `define SELECT_NONE 0

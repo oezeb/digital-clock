@@ -17,16 +17,17 @@ module Alarm (
 
     output reg out
 );
-    wire increment_posedge;
+    reg prev_increment;
 
     always @(posedge clk or posedge reset) begin
         if(reset) begin
             sec_out <= 0;
             min_out <= 0;
             hour_out <= 0;
+            out <= 0;
         end
         else begin
-            if(increment_posedge) begin
+            if(increment & ~prev_increment) begin
                 case(select)
                     `SELECT_SEC: sec_out <= sec_out + 1 > 59 ? 0 : sec_out + 1;
                     `SELECT_MIN: min_out <= min_out + 1 > 59 ? 0 : min_out + 1;
@@ -42,12 +43,8 @@ module Alarm (
             else begin
                 out <= 0;
             end
-        end   
-    end
+        end
 
-    PosedgeDetector PosedgeDetector_increment(
-        .clk(clk),
-        .signal(increment),
-        .out(increment_posedge)
-    );
+        prev_increment <= increment;
+    end
 endmodule

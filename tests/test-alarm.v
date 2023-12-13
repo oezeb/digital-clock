@@ -1,6 +1,6 @@
 `include "constants.v"
 
-module TestAlarm ();
+module TestAlarm();
     reg reset, enable;
 
     reg clk, clock_reset;
@@ -22,27 +22,27 @@ module TestAlarm ();
         clock_reset <= 1;
         select <= `SELECT_NONE; increment <= 0;
         #1 reset <= 0;
-        #1 increment <= 1; #1 increment <= 0;
+        #2 increment <= 1; #2 increment <= 0;
+        #3 increment <= 1; #2 increment <= 0;
         #1 select <= `SELECT_SEC;
-        #1 increment <= 1; #1 increment <= 0;
-        #1 increment <= 1; #1 increment <= 0;
+        #2 increment <= 1; #2 increment <= 0;
+        #3 increment <= 1; #2 increment <= 0;
         #1 clock_reset <= 0;
-        #10 enable <= 1;
-        #1 clock_reset <= 1; #1 clock_reset <= 0;
-        #10 select <= `SELECT_MIN;
-        #1 increment <= 1; #1 increment <= 0;
-        #1 increment <= 1; #1 increment <= 0;
+        #20 enable <= 1;
+        #2 clock_reset <= 1; #2 clock_reset <= 0;
+        #1 select <= `SELECT_MIN;
+        #2 increment <= 1; #2 increment <= 0;
+        #3 increment <= 1; #2 increment <= 0;
         #1 select <= `SELECT_HOUR;
-        #1 increment <= 1; #1 increment <= 0;
-        #1 increment <= 1; #1 increment <= 0;
+        #2 increment <= 1; #2 increment <= 0;
+        #3 increment <= 1; #2 increment <= 0;
         #5 $finish;
     end
 
     always #1 clk = ~clk;
 
-    Clock Clock(
+    Clock #(2) Clock(
         .clk(clk), 
-        .set(0),
         .reset(clock_reset),
         .sec_out(sec_in),
         .min_out(min_in),

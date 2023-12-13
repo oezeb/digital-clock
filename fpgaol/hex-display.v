@@ -1,4 +1,4 @@
-`include "constants.v"
+`include "../constants.v"
 
 module HexDisplay#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
     input clk, reset,
@@ -6,19 +6,24 @@ module HexDisplay#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
     output reg [3:0] data,
     output reg [2:0] an
 );
-    wire clk1KHz;
+    reg [31:0] counter;
+    wire [31:0] threshold = CLK_FREQ_HZ / `KILO;
 
-    always @(posedge clk1KHz or posedge reset) begin
+    always @(posedge clk or posedge reset) begin
         if(reset) begin
             an <= 0;
         end
         else begin
-            an <= an + 1;
+            if(counter + 1 > threshold) begin
+                counter <= 0;
+                an <= an + 1;
+            end
+            else counter <= counter + 1;
         end
     end
 
     always @* begin
-        case (an)
+        case(an)
             3'b000: begin
                 data <= all_data[3:0];
             end
@@ -48,9 +53,4 @@ module HexDisplay#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
             end
         endcase
     end
-
-    ClockConverter #(CLK_FREQ_HZ, 1000) ClockConverter(
-        .clk(clk),
-        .clk_out(clk1KHz)
-    );
 endmodule

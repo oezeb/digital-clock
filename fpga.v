@@ -1,87 +1,159 @@
-`include "constants.v"
-
 module FPGA(
-    input CLK100MHZ, btn, 
-    input [7:0] sw,
-    output [3:0] hexplay_data,
-    output [2:0] hexplay_an,
-    output [7:0] led
+    input CLK100MHZ, CPU_RESETN,
+    input BTNC, BTNU, BTNL, BTNR, BTND,
+
+    output [15:0] LED,
+    output CA, CB, CC, CD, CE, CF, CG,
+    output [7:0] AN,
+    output reg AUD_PWM
 );
+    reg PREV_BTNC;
+    // reg PREV_BTNU;
+    reg PREV_BTNL;
+    reg PREV_BTNR;
+    reg PREV_BTND;
+
     // digital clock
-    wire clock_global_reset;
-    wire clock_reset;
-    wire [1:0] clock_mode;
-    wire [1:0] clock_select;
-    wire clock_increment;
-    wire clock_alarm_enable;
+    wire reset;
+    reg [1:0] mode;
+    reg [1:0] select;
+    wire increment;
+    reg alarm_enable;
+    reg timer_enable;
 
-    wire [9:0] clock_ms_out;
-    wire [5:0] clock_sec_out;
-    wire [5:0] clock_min_out;
-    wire [4:0] clock_hour_out;
+    wire [5:0] sec_out;
+    wire [5:0] min_out;
+    wire [4:0] hour_out;
+    wire alarm_out, timer_out;
 
-    wire clock_alarm_out;
-
-    // hex display
-    wire [31:0] hexdisplay_all_data;
+    // seven segment display
+    wire [31:0] seg7display_all_data;
 
     // bin to bcd
-    wire [11:0] ms_out_bcd;
     wire [7:0] sec_out_bcd;
     wire [7:0] min_out_bcd;
     wire [7:0] hour_out_bcd;
 
-    // assign
-    assign clock_global_reset = sw[7];
-    assign clock_reset = sw[6];
-    assign clock_alarm_enable = sw[5];
-    assign clock_select = sw[3:2];
-    assign clock_mode = sw[1:0];
-    assign clock_increment = btn;
+    // 1.5KHz clock for audio
+    reg [31:0] counter;
+    wire [31:0] threshold = 100 * `MEGA / 1500;
 
-    assign led = {clock_global_reset, clock_reset, clock_alarm_out, clock_increment, clock_select, clock_mode};
-    assign hexdisplay_all_data = clock_mode == `MODE_STOPWATCH ? {min_out_bcd, sec_out_bcd, ms_out_bcd} : {hour_out_bcd, min_out_bcd, sec_out_bcd};
+    // assign
+    assign reset = ~CPU_RESETN;
+    assign increment = BTNU;
+
+    assign seg7display_all_data = {hour_out_bcd, min_out_bcd, sec_out_bcd};
+    assign LED[1:0] = mode;
+    assign LED[3:2] = select;
+    assign LED[4] = timer_enable;
+    assign LED[5] = timer_out;
+    assign LED[6] = alarm_enable;
+    assign LED[7] = alarm_out;
+    assign LED[15:8] = sec_out;
+
+
+    always @(posedge CLK100MHZ or posedge reset) begin
+        if(reset) begin
+            AUD_PWM <= 0;
+            timer_enable <= 0;
+            select <= `SELECT_NONE;
+            counter <= 0;
+        end
+        else begin
+            if(counter + 1 > threshold) begin
+                counter <= 0;
+                if(alarm_out | timer_out) begin
+                    AUD_PWM <= ~AUD_PWM;
+                    if(alarm_out) begin
+                        mode <= `MODE_ALARM;
+                        select <= `SELECT_NONE;
+                    end
+                    else begin
+                        mode <= `MODE_TIMER;
+                        select <= `SELECT_NONE;
+                    end
+                end
+                else AUD_PWM <= 0;
+            end
+            else counter <= counter + 1;
+
+            if(BTNC & ~PREV_BTNC & mode == `MODE_TIMER) begin
+                timer_enable <= ~timer_enable;
+            end
+
+            if(BTNR & ~PREV_BTNR) begin
+                case(mode)
+                    `MODE_CLOCK: begin
+                        mode <= `MODE_TIMER;
+                        select <= `SELECT_SEC;
+                    end
+                    `MODE_TIMER: begin
+                        mode <= `MODE_ALARM;
+                        select <= `SELECT_SEC;
+                    end
+                    `MODE_ALARM: begin
+                        mode <= `MODE_CLOCK;
+                        select <= `SELECT_NONE;
+                    end
+                endcase
+            end
+
+            if(BTNL & ~PREV_BTNL) begin
+                alarm_enable <= ~alarm_enable;
+            end
+
+            if(BTND & ~PREV_BTND) begin
+                case(select)
+                    `SELECT_NONE: select <= `SELECT_SEC;
+                    `SELECT_SEC: select <= `SELECT_MIN;
+                    `SELECT_MIN: select <= `SELECT_HOUR;
+                    `SELECT_HOUR: select <= `SELECT_NONE;
+                endcase
+            end
+        end
+
+        PREV_BTNC <= BTNC;
+        // PREV_BTNU <= BTNU;
+        PREV_BTNL <= BTNL;
+        PREV_BTNR <= BTNR;
+        PREV_BTND <= BTND;
+    end
 
     DigitalClock #(100 * `MEGA) DigitalClock(
         .clk(CLK100MHZ),
-        .global_reset(clock_global_reset),
-        .reset(clock_reset),
-        .mode(clock_mode),
-        .select(clock_select),
-        .increment(clock_increment),
-        .alarm_enable(clock_alarm_enable),
-        .ms_out(clock_ms_out),
-        .sec_out(clock_sec_out),
-        .min_out(clock_min_out),
-        .hour_out(clock_hour_out),
-        .alarm_out(clock_alarm_out)
+        .reset(reset),
+        .mode(mode),
+        .select(select),
+        .increment(increment),
+        .alarm_enable(alarm_enable),
+        .timer_enable(timer_enable),
+        .sec_out(sec_out),
+        .min_out(min_out),
+        .hour_out(hour_out),
+        .alarm_out(alarm_out),
+        .timer_out(timer_out)
     );
 
-    HexDisplay #(100 * `MEGA) HexDisplay(
+    Seg7Display #(100 * `MEGA) Seg7Display(
         .clk(CLK100MHZ),
-        .reset(clock_global_reset),
-        .all_data(hexdisplay_all_data),
-        .data(hexplay_data),
-        .an(hexplay_an)
-    );
-
-    Bin2BCD #(12) Bin2BCD_ms(
-        .bin(clock_ms_out),
-        .bcd(ms_out_bcd)
+        .reset(reset),
+        .all_data(seg7display_all_data),
+        .CA(CA), .CB(CB), .CC(CC), .CD(CD), .CE(CE), .CF(CF), .CG(CG),
+        .AN(AN)
     );
 
     Bin2BCD #(8) Bin2BCD_sec(
-        .bin(clock_sec_out),
+        .bin(sec_out),
         .bcd(sec_out_bcd)
     );
 
     Bin2BCD #(8) Bin2BCD_min(
-        .bin(clock_min_out),
+        .bin(min_out),
         .bcd(min_out_bcd)
     );
 
     Bin2BCD #(8) Bin2BCD_hour(
-        .bin(clock_hour_out),
+        .bin(hour_out),
         .bcd(hour_out_bcd)
-    );
+    );    
 endmodule
