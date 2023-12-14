@@ -6,7 +6,9 @@
 // Project Name: Digital Clock
 // Creation Date: 2023-12-11
 // Description: Implements a 24-hour clock. The `select` and `increment` inputs can be used
-//             to edit the time(`sec_out`, `min_out`, `hour_out`).
+//             to edit the time(`sec_out`, `min_out`, `hour_out`). Because the clock is
+//             running while editing, the `sec_out` will be reset to 0 when trying to edit
+//             the seconds. 
 //
 //////////////////////////////////////////////////////////////////////////////////
 
