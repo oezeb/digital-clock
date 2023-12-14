@@ -1,15 +1,25 @@
-// Convert 4-bit binary to 7-segment display
-//      CA
-//      ====
-// CF ||    || CB
-//      ==== CG
-// CE ||    || CC
-//      ====
-//      CD
+//////////////////////////////////////////////////////////////////////////////////
+// Author: github.com/oezeb
+// 
+// Module Name: Seg7Decoder
+// Project Name: Digital Clock
+// Creation Date: 2023-12-13
+// Description: Converts 4-bit binary to 7-segment display. Only supports 0-9. 
+//              The output is active low and is used to turn on/off the segments 
+//              as shown below. See Nexys 4 DDR reference manual for more details.
+//                    CA
+//                   ====
+//              CF ||    || CB
+//                   ==== CG
+//              CE ||    || CC
+//                   ====
+//                    CD
 //
+//////////////////////////////////////////////////////////////////////////////////
+
 module Seg7Decoder(
     input [3:0] in,
-    output reg CA, CB, CC, CD, CE, CF, CG
+    output reg CA, CB, CC, CD, CE, CF, CG // active low
 );
     always @* begin
         case(in)
@@ -42,24 +52,6 @@ module Seg7Decoder(
             end
             4'b1001: begin // CA, CB, CC, CF, CG
                 {CA, CB, CC, CD, CE, CF, CG} <= 7'b0001100;
-            end
-            4'b1010: begin // CA, CB, CC, CD, CF, CG
-                {CA, CB, CC, CD, CE, CF, CG} <= 7'b0001000;
-            end
-            4'b1011: begin // CC, CD, CE, CF, CG
-                {CA, CB, CC, CD, CE, CF, CG} <= 7'b1100000;
-            end
-            4'b1100: begin // CA, CD, CE, CF
-                {CA, CB, CC, CD, CE, CF, CG} <= 7'b0110001;
-            end
-            4'b1101: begin // CB, CC, CD, CE, CG
-                {CA, CB, CC, CD, CE, CF, CG} <= 7'b1000010;
-            end
-            4'b1110: begin // CA, CD, CE, CF, CG
-                {CA, CB, CC, CD, CE, CF, CG} <= 7'b0110000;
-            end
-            4'b1111: begin // CA, CE, CF, CG
-                {CA, CB, CC, CD, CE, CF, CG} <= 7'b0111000;
             end
             default: begin
                 {CA, CB, CC, CD, CE, CF, CG} <= 7'b1111111;

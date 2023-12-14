@@ -1,4 +1,14 @@
 `include "constants.vh"
+//////////////////////////////////////////////////////////////////////////////////
+// Author: github.com/oezeb
+// 
+// Module Name: Top
+// Project Name: Digital Clock
+// Creation Date: 2023-12-13
+// Description: Top level module for the digital clock project. This module is 
+//            built to run on the Nexys 4 DDR board.
+//
+//////////////////////////////////////////////////////////////////////////////////
 
 module Top(
     input CLK100MHZ, CPU_RESETN,
@@ -7,7 +17,7 @@ module Top(
     output [15:0] LED,
     output CA, CB, CC, CD, CE, CF, CG,
     output [7:0] AN,
-    output reg AUD_PWM
+    output reg AUD_PWM // alarm out and timer out audio
 );
     reg PREV_BTNC;
     // reg PREV_BTNU;
@@ -28,14 +38,6 @@ module Top(
     wire [4:0] hour_out;
     wire alarm_out, timer_out;
 
-    // seven segment display
-    wire [31:0] seg7display_all_data;
-
-    // bin to bcd
-    wire [7:0] sec_out_bcd;
-    wire [7:0] min_out_bcd;
-    wire [7:0] hour_out_bcd;
-
     // 1.5KHz clock for audio
     reg [31:0] counter;
     wire [31:0] threshold = 100 * `MEGA / 1500;
@@ -44,7 +46,6 @@ module Top(
     assign reset = ~CPU_RESETN;
     assign increment = BTNU;
 
-    assign seg7display_all_data = {hour_out_bcd, min_out_bcd, sec_out_bcd};
     assign LED[1:0] = mode;
     assign LED[3:2] = select;
     assign LED[4] = timer_enable;
@@ -52,7 +53,6 @@ module Top(
     assign LED[6] = alarm_enable;
     assign LED[7] = alarm_out;
     assign LED[15:8] = sec_out;
-
 
     always @(posedge CLK100MHZ or posedge reset) begin
         if(reset) begin
@@ -139,23 +139,10 @@ module Top(
     Seg7Display #(100 * `MEGA) Seg7Display(
         .clk(CLK100MHZ),
         .reset(reset),
-        .all_data(seg7display_all_data),
+        .sec(sec_out),
+        .min(min_out),
+        .hour(hour_out),
         .CA(CA), .CB(CB), .CC(CC), .CD(CD), .CE(CE), .CF(CF), .CG(CG),
         .AN(AN)
     );
-
-    Bin2BCD #(8) Bin2BCD_sec(
-        .bin(sec_out),
-        .bcd(sec_out_bcd)
-    );
-
-    Bin2BCD #(8) Bin2BCD_min(
-        .bin(min_out),
-        .bcd(min_out_bcd)
-    );
-
-    Bin2BCD #(8) Bin2BCD_hour(
-        .bin(hour_out),
-        .bcd(hour_out_bcd)
-    );    
 endmodule

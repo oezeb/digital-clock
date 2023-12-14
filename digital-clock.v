@@ -1,4 +1,14 @@
 `include "constants.vh"
+//////////////////////////////////////////////////////////////////////////////////
+// Author: github.com/oezeb
+// 
+// Module Name: DigitalClock
+// Project Name: Digital Clock
+// Creation Date: 2023-12-11
+// Description: Implements a multi-function digital clock. The `mode` input can be
+//             used to switch between clock, timer and alarm modes. 
+//
+//////////////////////////////////////////////////////////////////////////////////
 
 module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
     input clk, reset,
@@ -24,10 +34,6 @@ module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
     wire [4:0] clock_hour_out;
 
     // alarm
-    wire [5:0] alarm_sec_in;
-    wire [5:0] alarm_min_in;
-    wire [4:0] alarm_hour_in;
-
     wire [1:0] alarm_select;
 
     wire [5:0] alarm_sec_out;
@@ -47,10 +53,6 @@ module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
     assign alarm_select = mode == `MODE_ALARM & ~reset ? select : `SELECT_NONE;
     assign timer_select = mode == `MODE_TIMER & ~reset ? select : `SELECT_NONE;
 
-    assign alarm_sec_in = clock_sec_out;
-    assign alarm_min_in = clock_min_out;
-    assign alarm_hour_in = clock_hour_out;
-    
     always @* begin
         case (mode)
             `MODE_CLOCK: begin
@@ -90,9 +92,9 @@ module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
         .clk(clk),
         .reset(reset),
         .enable(alarm_enable),
-        .sec_in(alarm_sec_in),
-        .min_in(alarm_min_in),
-        .hour_in(alarm_hour_in),
+        .sec_in(clock_sec_out),
+        .min_in(clock_min_out),
+        .hour_in(clock_hour_out),
         .select(alarm_select),
         .increment(increment),
         .sec_out(alarm_sec_out),
