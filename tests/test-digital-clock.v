@@ -1,66 +1,54 @@
-`include "constants.vh"
+`include "../constants.vh"
 
 module TestDigitalClock();
-    reg clk, global_reset, reset;
+    reg clk, reset;
 
     reg [1:0] mode;
 
     reg [1:0] select;
     reg increment;
 
-    reg alarm_enable;
+    reg alarm_enable, timer_enable;
 
-    wire [6:0] ms_out;
     wire [5:0] sec_out;
     wire [5:0] min_out;
     wire [4:0] hour_out;
 
-    wire alarm_out;
+    wire alarm_out, timer_out;
 
     initial begin
-        clk <= 0; global_reset <= 1; reset <= 0;
+        clk <= 0; reset <= 1;
         mode <= `MODE_CLOCK;
-        select <= `SELECT_NONE;
-        increment <= 0; alarm_enable <= 0;
-        #1 global_reset <= 0;
-        #5 reset <= 1; #1 reset <= 0;
-        #1 increment <= 1;
-
-        #5 mode <= `MODE_STOPWATCH;
-        #5 mode <= `MODE_ALARM_EDIT;
-        #5 increment <= 0;
-        #5 mode <= `MODE_STOPWATCH;
-
-        #5 mode <= `MODE_ALARM_EDIT; select <= `SELECT_SEC; 
-        #1 global_reset <= 1; #1 global_reset <= 0; 
-        #1 alarm_enable <= 1;
-        #1 increment <= 1; #1 increment <= 0;
-        #1 alarm_enable <= 0;
-
-        #5 mode <= `MODE_CLOCK_EDIT; select <= `SELECT_SEC;
-        #1 select <= `SELECT_MIN;
-        #10 mode <= `MODE_CLOCK;
-
-        #5 mode <= `MODE_CLOCK_EDIT; select <= `SELECT_HOUR;
-        #1 increment <= 1; #1 increment <= 0;
-        #4 increment <= 1; #1 increment <= 0;
-        #5 $finish;
+        select <= `SELECT_NONE; increment <= 0;
+        alarm_enable <= 0; timer_enable <= 0;
+        #1 reset <= 0;
+        #2 mode <= `MODE_ALARM; select <= `SELECT_SEC;
+        #2 increment <= 1; #2 increment <= 0;
+        #2 increment <= 1; #2 increment <= 0;
+        #2 mode <= `MODE_CLOCK; alarm_enable <= 1;
+        #10 mode <= `MODE_TIMER; select <= `SELECT_SEC;
+        #2 increment <= 1; #2 increment <= 0;
+        #2 increment <= 1; #2 increment <= 0;
+        #2 increment <= 1; #2 increment <= 0;
+        #2 timer_enable <= 1;
+        #25 mode <= `MODE_CLOCK; select <= `SELECT_SEC;
+        #10 increment <= 1; #2 increment <= 0;
+        #2 select <= `SELECT_MIN;
+        #2 increment <= 1; #2 increment <= 0;
+        #2 select <= `SELECT_HOUR;
+        #2 increment <= 1; #2 increment <= 0;
+        #2 alarm_enable <= 0; timer_enable <= 0;
+        #10 $finish;
     end
 
-    always #2 clk = ~clk;
+    always #1 clk = ~clk;
 
-    DigitalClock DigitalClock(
-        .clk(clk),
-        .global_reset(global_reset),
-        .reset(reset),
+    DigitalClock #(2) DigitalClock(
+        .clk(clk), .reset(reset),
         .mode(mode),
-        .select(select),
-        .increment(increment),
-        .alarm_enable(alarm_enable),
-        .ms_out(ms_out),
-        .sec_out(sec_out),
-        .min_out(min_out),
-        .hour_out(hour_out),
-        .alarm_out(alarm_out)
+        .select(select), .increment(increment),
+        .alarm_enable(alarm_enable), .timer_enable(timer_enable),
+        .sec_out(sec_out), .min_out(min_out), .hour_out(hour_out),
+        .alarm_out(alarm_out), .timer_out(timer_out)
     );
 endmodule

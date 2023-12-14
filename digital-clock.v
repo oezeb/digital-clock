@@ -10,7 +10,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
+module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1Hz
     input clk, reset,
     
     input [1:0] mode, 

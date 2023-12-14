@@ -1,15 +1,20 @@
 module TestBin2BCD();
     reg [7:0] bin;
-    wire [15:0] bcd;
+    wire [9:0] bcd;
 
-    integer i;
 
     initial begin
         bin = 0;
-        for(i = 0; i < 10; i = i + 1) begin
-            #1 bin = bin + 1;
-        end
-        #10 $finish;
+        #1 bin = 3;
+        #1 bin = 10;
+        #1 bin = 13;
+        #1 bin = 20;
+        #1 bin = 24;
+        #1 bin = 30;
+        #1 bin = 36;
+        #1 bin = 40;
+        #1 bin = 49;
+        #1 $finish;
     end
 
     Bin2BCD Bin2BCD(

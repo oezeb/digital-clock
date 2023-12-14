@@ -92,6 +92,7 @@ module Top(
                     `MODE_TIMER: begin
                         mode <= `MODE_ALARM;
                         select <= `SELECT_SEC;
+                        timer_enable <= 0; // stop timer when leaving timer mode
                     end
                     `MODE_ALARM: begin
                         mode <= `MODE_CLOCK;
