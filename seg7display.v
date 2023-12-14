@@ -1,4 +1,4 @@
-`include "constants.v"
+`include "constants.vh"
 
 module Seg7Display#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
     input clk, reset,

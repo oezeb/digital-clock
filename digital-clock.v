@@ -1,4 +1,4 @@
-`include "constants.v"
+`include "constants.vh"
 
 module DigitalClock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1KHz
     input clk, reset,

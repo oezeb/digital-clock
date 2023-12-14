@@ -1,4 +1,4 @@
-`include "constants.v"
+`include "constants.vh"
 
 module Timer#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1Hz
     input clk, reset, enable,

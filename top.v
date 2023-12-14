@@ -1,4 +1,6 @@
-module FPGA(
+`include "constants.vh"
+
+module Top(
     input CLK100MHZ, CPU_RESETN,
     input BTNC, BTNU, BTNL, BTNR, BTND,
 

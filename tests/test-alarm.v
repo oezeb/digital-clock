@@ -1,4 +1,4 @@
-`include "constants.v"
+`include "constants.vh"
 
 module TestAlarm();
     reg reset, enable;
