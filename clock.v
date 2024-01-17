@@ -5,17 +5,17 @@
 // Module Name: Clock
 // Project Name: Digital Clock
 // Creation Date: 2023-12-11
-// Description: Implements a 24-hour clock. The `select` and `increment` inputs can be used
-//             to edit the time(`sec_out`, `min_out`, `hour_out`). Because the clock is
-//             running while editing, the `sec_out` will be reset to 0 when trying to edit
-//             the seconds. 
+// Description: Implements a 24-hour clock. The `select` and `increment` inputs 
+//             can be used to edit the time(`sec_out`, `min_out`, `hour_out`). 
+//             Because the clock is running while editing, the `sec_out` will be 
+//             reset to 0 when trying to edit the seconds. 
 //
 //////////////////////////////////////////////////////////////////////////////////
 
 module Clock#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1Hz
     input clk, reset,
 
-    input [1:0] select, // values: `SELECT_NONE, `SELECT_SEC, `SELECT_MIN, `SELECT_HOUR
+    input [1:0] select, // `SELECT_NONE, `SELECT_SEC, `SELECT_MIN, `SELECT_HOUR
     input increment,
 
     output reg [5:0] sec_out,

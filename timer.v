@@ -35,7 +35,7 @@ module Timer#(parameter CLK_FREQ_HZ = `KILO)( // CLK_FREQ_HZ >= 1Hz
             counter <= 0;
         end
         else if(enable) begin
-            // keep timer `out` signal high until the user sets the `enable` input to 0
+            // keep timer `out` signal high until user sets the `enable` input to 0
             if(~out) begin
                 out <= sec_out == 0 & min_out == 0 & hour_out == 0;
                 if(counter + 1 > CLK_FREQ_HZ) begin
