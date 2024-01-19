@@ -51,3 +51,5 @@ This project is a multi-function digital clock implemented on a [Nexys 4 DDR](ht
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
+
+![Nexys 4 DDR board](./nexys4ddr.jpg)
